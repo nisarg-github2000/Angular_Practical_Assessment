@@ -1,0 +1,16 @@
+<table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="row-border hover">
+    <thead>
+        <tr>
+            <th>Branch ID</th>
+            <th>Branch Name</th>
+            <th>Address</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let companyTotalBranches of branch.companyBranch">
+            <td>{{ companyTotalBranches.branchId }}</td>
+            <td>{{ companyTotalBranches.branchName }}</td>
+            <td>{{ companyTotalBranches.address }}</td>
+        </tr>
+    </tbody>
+</table>
