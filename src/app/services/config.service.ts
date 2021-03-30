@@ -11,7 +11,6 @@ import { CompanyModel } from '../models/company-model';
 export class ConfigService {
 
   private readonly url = "http://localhost:3000/companies"
-  private readonly Surl = "../../assets/company.json"
 
   constructor(private http: HttpClient) {
 
@@ -70,10 +69,12 @@ export class ConfigService {
   // }
 
   addCompany(company: CompanyModel) {
+    delete company.branchesVisible;
     return this.http.post(this.url, company).pipe(catchError(this.handleError));
   }
 
   editCompany(company: CompanyModel) {
+    delete company.branchesVisible;
     return this.http
       .put(`${this.url}/${company.id}`, company)
       .pipe(catchError(this.handleError));
@@ -83,6 +84,18 @@ export class ConfigService {
     return this.http
       .delete(`${this.url}/${id}`)
       .pipe(catchError(this.handleError));
+  }
+
+  ifCompanyExist(company: CompanyModel): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      let result;
+      this.getAllCompanies().subscribe((list) => {
+        result = list.filter(
+          (ele) => ele.name.toLowerCase() == company.name.toLowerCase()
+        );
+        return resolve(result.length > 0);
+      });
+    });
   }
 
   private handleError(error: HttpErrorResponse) {

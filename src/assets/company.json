@@ -46,6 +46,26 @@
           "address": "Advamedica Inc. Harvard Square,1 Mifflin Place, Suite 400, Cambridge, Massachusetts, Zip Code-02138, USA"
         }
       ]
+    },
+    {
+      "id": 3,
+      "name": "Zomato",
+      "email": "zomato@support.com",
+      "address": "Surat",
+      "totalEmployee": 1200,
+      "isCompanyActive": true,
+      "totalBranch": 0,
+      "companyBranch": []
+    },
+    {
+      "id": 4,
+      "name": "Swiggy",
+      "email": "swiggy@support.com",
+      "address": "Nadiad",
+      "totalEmployee": 20,
+      "isCompanyActive": true,
+      "totalBranch": 0,
+      "companyBranch": []
     }
   ]
 }

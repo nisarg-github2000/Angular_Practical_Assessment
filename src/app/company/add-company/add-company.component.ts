@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { BranchDetails } from '../../models/company-model';
-import { AlertService } from 'src/app/services/alert.service'
+import { BranchDetails, CompanyModel } from '../../models/company-model';
+import { AlertService } from 'src/app/services/alert.service';
 import { ConfigService } from 'src/app/services/config.service';
 
 
@@ -25,16 +25,16 @@ export class AddCompanyComponent implements OnInit {
   constructor(
     private builder: FormBuilder,
     private alertService: AlertService,
-    private toastr: ToastrService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private toastr: ToastrService
   ) {
     this.addForm = this.builder.group({
-      id: ['', Validators.required],
+      id: [{ value: '', disabled: true }],
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       address: ['', Validators.required],
       totalEmployee: ['', [Validators.required, Validators.min(0)]],
-      isCompanyActive: [0, [Validators.required]],
+      isCompanyActive: [true, [Validators.required]],
     });
 
     this.branchesForm = this.builder.group({
@@ -42,14 +42,17 @@ export class AddCompanyComponent implements OnInit {
       branchName: ['', Validators.required],
       address: ['', Validators.required],
     });
-
-    this.configService.getId().then((id: number) => {
-      this.id = id;
-    });
   }
 
   ngOnInit(): void {
-    this.addForm.patchValue({ id: this.id });
+    this.getCompanyId();
+  }
+
+  getCompanyId(){
+    this.configService.getId().then((id: number) => {
+      this.id = id;
+      this.addForm.patchValue({ id: this.id });
+    });
   }
 
   get f() {
@@ -60,20 +63,29 @@ export class AddCompanyComponent implements OnInit {
     return this.branchesForm.controls;
   }
 
-  addCompany() {
-    let data = JSON.parse(JSON.stringify(this.addForm.value));
+  async addCompany() {
+    let data = JSON.parse(JSON.stringify(this.addForm.getRawValue()));
     data.totalBranch = this.branches.length;
     data.companyBranch = this.branches;
-    console.log(this.branches.length);
-    
-    this.configService.addCompany(data).subscribe((resp: any) => {
-      console.log(resp);
-      if (resp != null) {
-        this.toastr.success('Company has been added', 'Success');
-      } else {
-        this.toastr.error('Company not added', 'Failed');
-      }
-    });
+    let isExist = await this.configService.ifCompanyExist(data);
+
+    if (!isExist) {
+      this.configService.addCompany(data).subscribe((resp: any) => {
+        if (resp != null) {
+          this.alertService.successAlert('Success', 'Company has been added');
+          this.getCompanyId();
+        } else {
+          this.alertService.failureAlert('Failed', 'Company not added');
+        }
+        this.addForm.reset();
+        this.submitted = false;
+      });
+    } else {
+      this.alertService.failureAlert(
+        'Already Exist',
+        `Company with name ${data.name.toLowerCase()} already exist`
+      );
+    }
   }
 
   onSubmit() {
