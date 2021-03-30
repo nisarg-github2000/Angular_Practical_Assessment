@@ -3,23 +3,49 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
+import { CompanyModel } from '../models/company-model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
 
-  private readonly dataUrl = "http://localhost:3000/company"
+  private readonly url = "http://localhost:3000/companies"
+  private readonly Surl = "../../assets/company.json"
 
   constructor(private http: HttpClient) {
 
   }
 
   getAllCompanies() {
-    return this.http.get(this.dataUrl)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.http
+      .get<CompanyModel[]>(this.url)
+      .pipe(catchError(this.handleError));
+  }
+
+  getId() {
+    return new Promise((resolve, reject) => {
+      let maxId = 0;
+      this.http
+        .get<CompanyModel[]>(this.url)
+        .subscribe((resp: CompanyModel[]) => {
+          resp.map((ele) => {
+            ele.id = parseInt('' + ele.id);
+            console.log(ele);
+
+            if (ele.id > maxId) {
+              maxId = ele.id;
+            }
+          });
+          return resolve(++maxId);
+        });
+    });
+  }
+
+  getCompanyById(id: any) {
+    return this.http
+      .get(`${this.url}/${id}`)
+      .pipe(catchError(this.handleError));
   }
 
   // editCompany() {
@@ -42,6 +68,22 @@ export class ConfigService {
   //       catchError(this.handleError)
   //     );
   // }
+
+  addCompany(company: CompanyModel) {
+    return this.http.post(this.url, company).pipe(catchError(this.handleError));
+  }
+
+  editCompany(company: CompanyModel) {
+    return this.http
+      .put(`${this.url}/${company.id}`, company)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteCompany(id: any) {
+    return this.http
+      .delete(`${this.url}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
 
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
